@@ -140,7 +140,13 @@ public class Compiler {
         }
         System.out.println("Symbol Table Entries:");
         symTable.printSymbols();
+
+        System.out.println("Ayaan Branch");
+        Branch_test b = new Branch_test();
+        b.print2();
+        //hello
         System.out.println("Master Branch 2");
+
     }
     
     // Helper function to determine if a lexeme is a data type.
