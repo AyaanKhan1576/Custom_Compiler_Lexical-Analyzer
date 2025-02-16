@@ -8,7 +8,8 @@ public class LexicalAnalyzerAutomata {
         this.dfa = dfa;
     }
 
-    // Tokenize the input string using the DFA (maximal munch) with special handling for string literals.
+    // Tokenize the input string using the DFA (maximal munch) with special handling for string literals
+    // and automatic conversion of uppercase letters (outside of string literals) to lowercase.
     public ArrayList<Token> tokenize(String input) {
         // Remove comments from the input.
         input = removeComments(input);
@@ -17,6 +18,17 @@ public class LexicalAnalyzerAutomata {
         int pos = 0;
         int lineNumber = 1;
         while (pos < input.length()) {
+            // If current character is not part of a string literal and is uppercase, warn and convert it.
+            if (input.charAt(pos) != '"' && Character.isUpperCase(input.charAt(pos))) {
+                System.out.println("Lexical Warning (line " + lineNumber + " pos " + pos + "): "
+                        + "Uppercase letter '" + input.charAt(pos) + "' detected. Converting to lowercase.");
+                input = input.substring(0, pos) 
+                        + Character.toLowerCase(input.charAt(pos)) 
+                        + input.substring(pos + 1);
+                // Do not advance pos, recheck the character (now lowercase)
+                continue;
+            }
+            
             // Skip whitespace.
             while (pos < input.length() && isWhitespace(input.charAt(pos))) {
                 if (input.charAt(pos) == '\n')
@@ -48,6 +60,15 @@ public class LexicalAnalyzerAutomata {
             int currentPos = pos;
             while (currentPos < input.length()) {
                 char c = input.charAt(currentPos);
+                // Also check for uppercase characters during DFA scanning.
+                if (c != '"' && Character.isUpperCase(c)) {
+                    System.out.println("Lexical Warning (line " + lineNumber + " pos " + currentPos + "): "
+                            + "Uppercase letter '" + c + "' detected. Converting to lowercase.");
+                    input = input.substring(0, currentPos)
+                            + Character.toLowerCase(c)
+                            + input.substring(currentPos + 1);
+                    c = input.charAt(currentPos);
+                }
                 int nextState = dfa.getTransition(currentState, c);
                 if (nextState == -1)
                     break;
