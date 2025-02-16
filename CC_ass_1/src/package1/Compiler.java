@@ -140,6 +140,7 @@ public class Compiler {
         }
         //System.out.println("Symbol Table Entries:");
         symTable.printSymbols();
+        System.out.println("minahil ");
     }
     
     // Helper function to determine if a lexeme is a data type.
@@ -148,3 +149,5 @@ public class Compiler {
                lexeme.equals("char") || lexeme.equals("string") || lexeme.equals("decimal");
     }
 }
+
+
