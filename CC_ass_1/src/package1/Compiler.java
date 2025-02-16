@@ -16,7 +16,7 @@ public class Compiler {
         List<TokenDefinition> definitions = new ArrayList<>();
 
         // Combine all keywords (including data types) into one definition.
-        definitions.add(new TokenDefinition("KEYWORD", "if|else|while|for|return|int|boolean|char|string|decimal", 1));
+        definitions.add(new TokenDefinition("KEYWORD", "if|else|while|for|return|int|boolean|char|string|decimal|const|void", 1));
 
         // Boolean literals.
         definitions.add(new TokenDefinition("BOOLEAN", "true|false", 1));
@@ -94,18 +94,27 @@ public class Compiler {
 
         // Updated test input: now includes a string literal and uses '=' and '>' operators.
         String input = "/* Sample program */\n" +
-                       "int a = 10;\n" +
-                       "boolean flag = true;\n" +
-                       "if (a > 5) {\n" +
-                       "    a = a + 1;\n" +
-                       "    return flag;\n" +
-                       "    print(\"hello\");\n" +
-                       "} else {\n" +
-                       "    a = a - 1;\n" +
-                       "    return false;\n" +
-                       "}\n" +
-                       " func()\n" +
-                       "foo(a) ";
+                "int a = 10;\n" +
+                "const int b = 20;\n" +
+                "boolean flag = true;\n" +
+                "char letter = 'A';\n" +
+                "string msg = \"hello world\";\n" +
+                "decimal pi = 3.14;\n" +
+                "scanf(\"%d\", a);\n" +
+                "if (a > 5) {\n" +
+                "    int localVar = 1;\n" +
+                "    const int localConst = 2;\n" +
+                "    a = a + localVar;\n" +
+                "    return flag;\n" +
+                "    print(\"hello\");\n" +
+                "} else {\n" +
+                "    a = a - 1;\n" +
+                "    return false;\n" +
+                "}\n" +
+                "void func() {\n" +
+                "    int localFuncVar = 100;\n" +
+                "}\n" +
+                "foo(a);";
         System.out.println("Input Code:\n" + input);
         ArrayList<Token> tokens = lexer.tokenize(input);
         System.out.println("\nTotal Tokens: " + tokens.size());
