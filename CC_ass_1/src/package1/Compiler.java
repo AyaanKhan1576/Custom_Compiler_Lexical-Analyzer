@@ -138,7 +138,7 @@ public class Compiler {
                 currentDataType = null; // Reset after declaration.
             }
         }
-        System.out.println("Symbol Table Entries:");
+        //System.out.println("Symbol Table Entries:");
         symTable.printSymbols();
     }
     
