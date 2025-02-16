@@ -2,6 +2,8 @@ package package1;
 import java.util.ArrayList;
 import java.util.List;
 
+//Testing new branch : Ayaan
+
 public class Compiler {
     // Special symbol for epsilon transitions.
     public static final char EPSILON = '\0';
@@ -102,8 +104,8 @@ public class Compiler {
                        "    a = a - 1;\n" +
                        "    return false;\n" +
                        "}\n" +
-                       "/* func()\n" +
-                       "foo(a) */";
+                       " func()\n" +
+                       "foo(a) ";
         System.out.println("Input Code:\n" + input);
         ArrayList<Token> tokens = lexer.tokenize(input);
         System.out.println("\nTotal Tokens: " + tokens.size());
@@ -138,6 +140,9 @@ public class Compiler {
         }
         System.out.println("Symbol Table Entries:");
         symTable.printSymbols();
+        System.out.println("Ayaan Branch");
+        Branch_test b = new Branch_test();
+        b.print2();
     }
     
     // Helper function to determine if a lexeme is a data type.
