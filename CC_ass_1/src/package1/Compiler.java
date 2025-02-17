@@ -22,11 +22,12 @@ public class Compiler {
         // Lower priority value means higher precedence.
         List<TokenDefinition> definitions = new ArrayList<>();
 
-        // Combine all keywords (including data types) into one definition.
-        definitions.add(new TokenDefinition("KEYWORD", "if|else|while|for|return|int|boolean|char|string|decimal|const|void", 1));
+        // Updated keywords for Ye Olde Code
+        definitions.add(new TokenDefinition("KEYWORD", 
+            "perchance|otheryonder|whilst|fortime|giveth|number|truth|letter|text|fraction|twainfraction|forever|nothing", 1));
 
-        // Boolean literals.
-        definitions.add(new TokenDefinition("BOOLEAN", "true|false", 1));
+        // Boolean literals remain the same
+        definitions.add(new TokenDefinition("TRUTH", "true|false", 1));
 
         // Identifier: letter followed by letters or digits.
         String letter = "(a|b|c|d|e|f|g|h|i|j|k|l|m|n|o|p|q|r|s|t|u|v|w|x|y|z)";
@@ -36,18 +37,18 @@ public class Compiler {
 
         // Integer: one or more digits.
         String integerRegex = digit + "(" + digit + ")*";
-        definitions.add(new TokenDefinition("INTEGER", integerRegex, 3));
+        definitions.add(new TokenDefinition("NUMBER", integerRegex, 3));
 
         // Decimal: integer, a literal dot, then integer.
         String decimalRegex = integerRegex + "\\." + integerRegex;
-        definitions.add(new TokenDefinition("DECIMAL", decimalRegex, 3));
+        definitions.add(new TokenDefinition("FRACTION", decimalRegex, 3));
 
         // Character literal: a letter enclosed in single quotes.
         String charLiteralRegex = "'" + letter + "'";
-        definitions.add(new TokenDefinition("CHARACTER", charLiteralRegex, 2));
+        definitions.add(new TokenDefinition("LETTER", charLiteralRegex, 2));
 
         // STRING literal: a double quote, then zero or more (letter, digit, or space), then a double quote.
-        definitions.add(new TokenDefinition("STRING", "\\\"(" + letter + "|" + digit + "| )*\\\"", 1));
+        definitions.add(new TokenDefinition("TEXT", "\\\"(" + letter + "|" + digit + "| )*\\\"", 1));
 
         // Operators (all marked as OPERATOR).
         definitions.add(new TokenDefinition("OPERATOR", "\\+", 1));
@@ -143,10 +144,9 @@ public class Compiler {
             processSymbolTable(tokens);
 
         } catch (FileNotFoundException e) {
-            System.err.println("Error: File not found - " + filePath);
-            System.err.println("Please make sure the file exists and the path is correct.");
+            ErrorHandler.handleFileNotFound(filePath);
         } catch (IOException e) {
-            System.err.println("Error reading file: " + e.getMessage());
+            ErrorHandler.handleFileReadError(e.getMessage());
         } finally {
             scanner.close();
         }
@@ -160,13 +160,15 @@ public class Compiler {
         String currentScope = "global";
         boolean inFunction = false;
         String currentFunction = null;
+        int currentLine = 1; // Add line tracking
 
         for (int i = 0; i < tokens.size(); i++) {
             Token t = tokens.get(i);
             String additionalInfo = "";
 
+            
          // First check if it's an I/O function declaration
-            if (t.type.equals("IDENTIFIER") && (t.lexeme.equals("scanf") || t.lexeme.equals("print"))) {
+            if (t.type.equals("IDENTIFIER") && (t.lexeme.equals("sayeth") || t.lexeme.equals("heareth"))) {
                 // Only add if it's the function name itself, not a call
                 if (i > 0 && !tokens.get(i-1).type.equals("OPERATOR")) {
                     symTable.addSymbol(new SymbolInfo(t.lexeme, "I/O Function", "global", -1, 
@@ -268,11 +270,11 @@ public class Compiler {
 
         symTable.printSymbols();
     }
-    
     // Helper function to determine if a lexeme is a data type.
     public static boolean isDataType(String lexeme) {
-        return lexeme.equals("int") || lexeme.equals("boolean") ||
-               lexeme.equals("char") || lexeme.equals("string") || lexeme.equals("decimal");
+        return lexeme.equals("number") || lexeme.equals("truth") ||
+               lexeme.equals("letter") || lexeme.equals("text") || 
+               lexeme.equals("fraction") || lexeme.equals("twainfraction");
     }
 }
 
