@@ -92,35 +92,61 @@ public class Compiler {
         // 4. Use the DFA in a lexical analyzer.
         LexicalAnalyzerAutomata lexer = new LexicalAnalyzerAutomata(dfa);
 
-        String input = "/* Sample program */\n" +
+        String input = "/* This is a multi-line comment\n" +
+                "   Testing multiple lines\n" +
+                "   of documentation */\n" +
+                "\n" +
+                "// Global variable declarations\n" +
                 "int a = 10;\n" +
                 "const int b = 20;\n" +
                 "boolean flag = true;\n" +
                 "char letter = 'A';\n" +
                 "string msg = \"hello world\";\n" +
                 "decimal pi = 3.14;\n" +
+                "\n" +
+                "// Testing I/O operations\n" +
                 "scanf(\"%d\", &a);\n" +
+                "\n" +
+                "/* Nested if blocks with\n" +
+                "   local variables */\n" +
                 "if (a > 5) {\n" +
+                "    // Local variables in first if block\n" +
                 "    int localvar = 1;\n" +
                 "    const int localconst = 2;\n" +
-                "scanf(\"%d\", a);\n" +
-                "if (a > 5) {\n" +
-                "    int localVar = 1;\n" +
-                "    const int localConst = 2;\n" +
-                "    a = a + localVar;\n" +
-                "    return flag;\n" +
-                "    print(\"hello\");\n" +
-                "} else {\n" +
-                "    a = a - 1;\n" +
-                "    return false;\n" +
+                "    \n" +
+                "    scanf(\"%d\", a);\n" +
+                "    \n" +
+                "    // Testing arithmetic operators\n" +
+                "    if (a % 5) {\n" +
+                "        /* Local variables in\n" +
+                "           nested if block */\n" +
+                "        int localVar = 1;\n" +
+                "        const int localConst = 2;\n" +
+                "        a = a + localVar;  // Addition operator\n" +
+                "        return flag;\n" +
+                "        print(\"hello\");\n" +
+                "    } else {\n" +
+                "        // Subtraction in else block\n" +
+                "        a = a - 1;\n" +
+                "        return false;\n" +
+                "    }\n" +
                 "}\n" +
+                "\n" +
+                "// Function declaration with local variables\n" +
                 "void func() {\n" +
-                "    int localfuncvar = 100;\n" +
+                "    // Local function variable\n" +
+                "    int localfuncvar1 = 100;\n" +
+                "    pi = 3;" +
                 "}\n" +
-                "foo(a);"+
+                "\n" +
+                "// Function declaration with parameters\n" +
+                "void foo(int param1) {\n" +
+                "    // Local variable in foo function\n" +
                 "    int localFuncVar = 100;\n" +
                 "}\n" +
-                "foo(a);";
+                "\n" +
+                "// Function call\n" +
+                "foo(param1);";
         System.out.println("Input Code:\n" + input);
         ArrayList<Token> tokens = lexer.tokenize(input);
         System.out.println("\nTotal Tokens: " + tokens.size());
@@ -129,89 +155,107 @@ public class Compiler {
         }
         System.out.println();
 
-        // 5. Symbol Table Insertion:
-        // We only add variables (IDENTIFIER tokens) to the symbol table.
-        // If a KEYWORD token matches a data type, then the next IDENTIFIER is treated as that variable's type.
-//        SymbolTable symTable = new SymbolTable();
-//        String currentDataType = null;
-//        for (int i = 0; i < tokens.size(); i++) {
-//            Token t = tokens.get(i);
-//            // If the token's lexeme is a known data type, force its type to KEYWORD and set currentDataType.
-//            if (isDataType(t.lexeme)) {
-//                t.type = "KEYWORD";
-//                currentDataType = t.lexeme;
-//            } else if (t.type.equals("IDENTIFIER")) {
-//                String symbolType = "";
-//                // If the identifier is immediately followed by "(" then it's a function.
-//                if (i + 1 < tokens.size() && tokens.get(i + 1).type.equals("PUNCTUATION") &&
-//                        tokens.get(i + 1).lexeme.equals("(")) {
-//                    symbolType = "Function";
-//                } else {
-//                    symbolType = (currentDataType != null) ? currentDataType : "Variable";
-//                }
-//                symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, "global", 1000 + symTable.getSize() * 4));
-//                currentDataType = null; // Reset after declaration.
-//            }
-//        }
-//        //System.out.println("Symbol Table Entries:");
-//        symTable.printSymbols();
+     // In your Compiler class, update the symbol table population logic:
         SymbolTable symTable = new SymbolTable();
         String currentDataType = null;
         boolean isConstant = false;
-        String currentScope = "global"; // Track the current scope
+        String currentScope = "global";
+        boolean inFunction = false;
+        String currentFunction = null;
 
         for (int i = 0; i < tokens.size(); i++) {
             Token t = tokens.get(i);
+            String additionalInfo = "";
 
-            // If the token is a known data type, mark it as a KEYWORD and set the currentDataType.
-            if (isDataType(t.lexeme)) {
-                t.type = "KEYWORD";
+            // First check if it's an I/O function to avoid treating it as a regular function
+            if (t.type.equals("IDENTIFIER") && (t.lexeme.equals("scanf") || t.lexeme.equals("print"))) {
+                symTable.addSymbol(new SymbolInfo(t.lexeme, "I/O Function", "global", -1, 
+                    "Standard Input/Output Operation"));
+                continue;  // Skip the rest of the loop for I/O functions
+            }
+
+            // Handle regular identifiers
+            if (t.type.equals("IDENTIFIER")) {
+                String symbolType = "Variable";
+                
+                // Check if it's a function declaration (but not an I/O function)
+                if (i + 1 < tokens.size() && tokens.get(i + 1).lexeme.equals("(") && 
+                    !t.lexeme.equals("scanf") && !t.lexeme.equals("print")) {
+                    symbolType = "Function";
+                    currentFunction = t.lexeme;
+                    inFunction = true;
+                    additionalInfo = "Return Type: " + (currentDataType != null ? currentDataType : "void");
+                    currentScope = "global";
+                }
+                // Check if it's a parameter
+                else if (inFunction && currentFunction != null && 
+                        i > 0 && tokens.get(i - 1).lexeme.equals("(")) {
+                    symbolType = "Variable";
+                    additionalInfo = "Parameter of " + currentFunction + " (" + 
+                                   (currentDataType != null ? currentDataType : "Unknown Type") + ")";
+                    currentScope = "local:" + currentFunction;
+                }
+                // Regular variable declaration
+                else if (currentDataType != null) {
+                    symbolType = "Variable";
+                    if (isConstant) {
+                        additionalInfo = "Constant " + currentDataType;
+                    } else {
+                        additionalInfo = "Type: " + currentDataType;
+                    }
+                    // Only set local scope if we're inside a real function (not an I/O function)
+                    if (inFunction && currentFunction != null && 
+                        !currentFunction.equals("scanf") && !currentFunction.equals("print")) {
+                        currentScope = "local:" + currentFunction;
+                        additionalInfo += " (Local to " + currentFunction + ")";
+                    } else {
+                        currentScope = "global";
+                    }
+                }
+                
+                // Assign memory location (skip for operators and comments)
+                int memoryLocation = (symbolType.equals("Arithmetic Operator") || 
+                                    symbolType.equals("Comment") || 
+                                    symbolType.equals("I/O Function")) ? -1 : 1000 + symTable.getSize() * 4;
+                
+                symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, currentScope, 
+                                                 memoryLocation, additionalInfo));
+                
+                if (!symbolType.equals("Function")) {
+                    currentDataType = null;
+                    isConstant = false;
+                }
+            }
+            // Handle operators
+            else if (t.type.equals("OPERATOR")) {
+                symTable.addSymbol(new SymbolInfo(t.lexeme, "Arithmetic Operator", 
+                                  currentScope, -1, "Performs arithmetic operation"));
+            }
+            // Handle comments
+            else if (t.lexeme.startsWith("//")) {
+                symTable.addSymbol(new SymbolInfo(t.lexeme, "Single Line Comment", 
+                                  currentScope, -1, "Source code documentation"));
+            }
+            else if (t.lexeme.startsWith("/*")) {
+                symTable.addSymbol(new SymbolInfo(t.lexeme, "Multi Line Comment", 
+                                  currentScope, -1, "Source code documentation"));
+            }
+            // Reset function context when closing a function
+            else if (t.lexeme.equals("}") && inFunction) {
+                inFunction = false;
+                currentFunction = null;
+                currentScope = "global";
+            }
+            // Track data types and constant declarations
+            else if (isDataType(t.lexeme)) {
                 currentDataType = t.lexeme;
-                isConstant = false; // Reset constant flag
-            } 
-            // If the token is "const", mark the next identifier as a constant.
+            }
             else if (t.lexeme.equals("const")) {
                 isConstant = true;
             }
-            // If the token is an IDENTIFIER (variable, function, or I/O function).
-            else if (t.type.equals("IDENTIFIER")) {
-                String symbolType = "";
-
-                // Check if it's a function (IDENTIFIER followed by "(")
-                if (i + 1 < tokens.size() && tokens.get(i + 1).lexeme.equals("(")) {
-                    symbolType = "Function (" + (currentDataType != null ? currentDataType : "void") + ")";
-                    currentScope = t.lexeme; // Change scope to function name
-                }
-                // Check if it's an I/O function (print, scanf, cout)
-                else if (t.lexeme.equals("print") || t.lexeme.equals("scanf") || t.lexeme.equals("cout")) {
-                    symbolType = "I/O Function";
-                }
-                // Otherwise, it's a variable (check if it's a constant)
-                else {
-                    symbolType = isConstant ? "Constant (" + (currentDataType != null ? currentDataType : "unknown") + ")" 
-                                            : (currentDataType != null ? currentDataType : "Variable");
-                }
-
-                // Assign memory address based on the current table size
-                int memoryLocation = 1000 + symTable.getSize() * 4;
-
-                // Add the symbol to the table
-                symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, currentScope, memoryLocation));
-
-                // Reset data type after variable declaration.
-                currentDataType = null;
-                isConstant = false;
-            }
-            // If we encounter "}", reset the scope to global (end of function)
-            else if (t.lexeme.equals("}")) {
-                currentScope = "global";
-            }
         }
 
-        // Print the final symbol table
-        System.out.println("Symbol Table Entries:");
         symTable.printSymbols();
-
     }
     
     // Helper function to determine if a lexeme is a data type.
