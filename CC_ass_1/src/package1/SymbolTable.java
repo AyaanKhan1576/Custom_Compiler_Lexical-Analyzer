@@ -1,29 +1,6 @@
 package package1;
 import java.util.HashMap;
 
-//public class SymbolTable {
-//    private HashMap<String, SymbolInfo> symbols;
-//
-//    public SymbolTable() {
-//        symbols = new HashMap<>();
-//    }
-//
-//    public void addSymbol(SymbolInfo info) {
-//        // If the symbol already exists in the current scope, you could report an error.
-//        symbols.put(info.name, info);
-//    }
-//
-//    public int getSize() {
-//        return symbols.size();
-//    }
-//
-//    public void printSymbols() {
-//        //System.out.println("Symbol Table Contents:");
-//        for (SymbolInfo info : symbols.values()) {
-//            System.out.println(info);
-//        }
-//    }
-//}
 public class SymbolTable {
     private HashMap<String, SymbolInfo> symbols;
     
@@ -68,21 +45,36 @@ public class SymbolTable {
     }
 
     public void printSymbols() {
-        // Print header
-    	System.out.println("\nSymbol Table:");
-        System.out.println(String.format("%-15s %-25s %-15s %-10s %-30s", 
-             "Name", "Type", "Scope", "Memory", "Additional Info"));
-        System.out.println("----------------------------------------------------------------------------------------------");
-        
+        // Define column widths for proper alignment
+        int nameWidth = 15, typeWidth = 25, scopeWidth = 15, memoryWidth = 10, infoWidth = 30;
+
+        // Print table header
+        System.out.println("\nSymbol Table:");
+        System.out.printf("%-15s %-25s %-15s %-10s %-30s%n", 
+                          "Name", "Type", "Scope", "Memory", "Additional Info");
+        System.out.println("────────────────────────────────────────────────────────────────────────────────────────────────────");
+
         // First print global symbols
         symbols.values().stream()
                .filter(info -> info.scope.equals("global"))
-               .forEach(System.out::println);
-        
-        // Then print local symbols, grouped by function
+               .forEach(info -> printFormattedSymbol(info, nameWidth, typeWidth, scopeWidth, memoryWidth, infoWidth));
+
+        // Print a separator for better readability
+        System.out.println("────────────────────────────────────────────────────────────────────────────────────────────────────");
+
+        // Then print local symbols, grouped by function scope
         symbols.values().stream()
                .filter(info -> !info.scope.equals("global"))
                .sorted((a, b) -> a.scope.compareTo(b.scope))
-               .forEach(System.out::println);
+               .forEach(info -> printFormattedSymbol(info, nameWidth, typeWidth, scopeWidth, memoryWidth, infoWidth));
+
+        System.out.println();
     }
+
+    // Helper method to print a formatted row
+    private void printFormattedSymbol(SymbolInfo info, int nameW, int typeW, int scopeW, int memW, int infoW) {
+        System.out.printf("%-15s %-25s %-15s %-10d %-30s%n", 
+                          info.name, info.type, info.scope, info.memoryLocation, info.additionalInfo);
+    }
+
 }

@@ -9,7 +9,7 @@ public class Compiler {
     public static final char EPSILON = '\0';
 
     public static void main(String[] args) {
-        System.out.println("=== COMPILER CONSTRUCTION PROJECT ===\n");
+        System.out.println("=== COMPILER CONSTRUCTION ASSIGNMENT 1 ===\n");
 
         // 1. Define token types with their regexes and priorities.
         // Lower priority value means higher precedence.
@@ -66,15 +66,21 @@ public class Compiler {
         definitions.add(new TokenDefinition("PUNCTUATION", "\\{", 1));
         definitions.add(new TokenDefinition("PUNCTUATION", "\\}", 1));
 
-        // Display defined token patterns.
-        System.out.println("Defined Token Patterns:");
+     // Display defined token patterns in a clean format
+        System.out.println("\n═══════════════════════════════════════════════════");
+        System.out.println("               Defined Token Patterns              ");
+        System.out.println("═══════════════════════════════════════════════════");
+
         for (TokenDefinition def : definitions) {
             String postfix = RegexToNFA.infixToPostfix(def.regex);
-            System.out.println("Token Type: " + def.tokenType);
-            System.out.println("  Infix Regex: " + def.regex);
-            System.out.println("  Postfix Regex: " + postfix);
+            
+            System.out.printf("▶ Token Type     : %s%n", def.tokenType);
+            System.out.printf("  ├── Infix Regex  : %s%n", def.regex);
+            System.out.printf("  └── Postfix Regex: %s%n%n", postfix);
         }
-        System.out.println();
+
+        System.out.println("═══════════════════════════════════════════════════\n");
+
 
         // 2. Build a combined NFA from all token definitions.
         CombinedNFA combinedNFA = new CombinedNFA(definitions);
@@ -149,11 +155,23 @@ public class Compiler {
                 "foo(param1);";
         System.out.println("Input Code:\n" + input);
         ArrayList<Token> tokens = lexer.tokenize(input);
-        System.out.println("\nTotal Tokens: " + tokens.size());
+     // Display the total number of tokens
+        System.out.println("\n══════════════════════════════════════════════");
+        System.out.printf("              Total Tokens: %d%n", tokens.size());
+        System.out.println("══════════════════════════════════════════════");
+
+        // Print table header
+        System.out.printf("%-5s │ %-15s │ %s%n", "#", "Token Type", "Lexeme");
+        System.out.println("──────────────────────────────────────────────");
+
+        // Print each token with formatting
+        int index = 1;
         for (Token t : tokens) {
-            System.out.println(t);
+            System.out.printf("%-5d │ %-15s │ %s%n", index++, t.type, t.lexeme);
         }
-        System.out.println();
+
+        System.out.println("══════════════════════════════════════════════\n");
+
 
         SymbolTable symTable = new SymbolTable();
         String currentDataType = null;

@@ -21,3 +21,6 @@ public class SymbolInfo {
                 name, type, scope, memoryLocation, additionalInfo);
     }
 }
+
+
+
