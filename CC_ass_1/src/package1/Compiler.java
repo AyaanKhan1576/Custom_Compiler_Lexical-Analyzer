@@ -92,7 +92,6 @@ public class Compiler {
         // 4. Use the DFA in a lexical analyzer.
         LexicalAnalyzerAutomata lexer = new LexicalAnalyzerAutomata(dfa);
 
-        // Updated test input: now includes a string literal and uses '=' and '>' operators.
         String input = "/* Sample program */\n" +
                 "int a = 10;\n" +
                 "const int b = 20;\n" +
@@ -100,6 +99,10 @@ public class Compiler {
                 "char letter = 'A';\n" +
                 "string msg = \"hello world\";\n" +
                 "decimal pi = 3.14;\n" +
+                "scanf(\"%d\", &a);\n" +
+                "if (a > 5) {\n" +
+                "    int localvar = 1;\n" +
+                "    const int localconst = 2;\n" +
                 "scanf(\"%d\", a);\n" +
                 "if (a > 5) {\n" +
                 "    int localVar = 1;\n" +
@@ -112,6 +115,9 @@ public class Compiler {
                 "    return false;\n" +
                 "}\n" +
                 "void func() {\n" +
+                "    int localfuncvar = 100;\n" +
+                "}\n" +
+                "foo(a);"+
                 "    int localFuncVar = 100;\n" +
                 "}\n" +
                 "foo(a);";
@@ -126,30 +132,86 @@ public class Compiler {
         // 5. Symbol Table Insertion:
         // We only add variables (IDENTIFIER tokens) to the symbol table.
         // If a KEYWORD token matches a data type, then the next IDENTIFIER is treated as that variable's type.
+//        SymbolTable symTable = new SymbolTable();
+//        String currentDataType = null;
+//        for (int i = 0; i < tokens.size(); i++) {
+//            Token t = tokens.get(i);
+//            // If the token's lexeme is a known data type, force its type to KEYWORD and set currentDataType.
+//            if (isDataType(t.lexeme)) {
+//                t.type = "KEYWORD";
+//                currentDataType = t.lexeme;
+//            } else if (t.type.equals("IDENTIFIER")) {
+//                String symbolType = "";
+//                // If the identifier is immediately followed by "(" then it's a function.
+//                if (i + 1 < tokens.size() && tokens.get(i + 1).type.equals("PUNCTUATION") &&
+//                        tokens.get(i + 1).lexeme.equals("(")) {
+//                    symbolType = "Function";
+//                } else {
+//                    symbolType = (currentDataType != null) ? currentDataType : "Variable";
+//                }
+//                symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, "global", 1000 + symTable.getSize() * 4));
+//                currentDataType = null; // Reset after declaration.
+//            }
+//        }
+//        //System.out.println("Symbol Table Entries:");
+//        symTable.printSymbols();
         SymbolTable symTable = new SymbolTable();
         String currentDataType = null;
+        boolean isConstant = false;
+        String currentScope = "global"; // Track the current scope
+
         for (int i = 0; i < tokens.size(); i++) {
             Token t = tokens.get(i);
-            // If the token's lexeme is a known data type, force its type to KEYWORD and set currentDataType.
+
+            // If the token is a known data type, mark it as a KEYWORD and set the currentDataType.
             if (isDataType(t.lexeme)) {
                 t.type = "KEYWORD";
                 currentDataType = t.lexeme;
-            } else if (t.type.equals("IDENTIFIER")) {
+                isConstant = false; // Reset constant flag
+            } 
+            // If the token is "const", mark the next identifier as a constant.
+            else if (t.lexeme.equals("const")) {
+                isConstant = true;
+            }
+            // If the token is an IDENTIFIER (variable, function, or I/O function).
+            else if (t.type.equals("IDENTIFIER")) {
                 String symbolType = "";
-                // If the identifier is immediately followed by "(" then it's a function.
-                if (i + 1 < tokens.size() && tokens.get(i + 1).type.equals("PUNCTUATION") &&
-                        tokens.get(i + 1).lexeme.equals("(")) {
-                    symbolType = "Function";
-                } else {
-                    symbolType = (currentDataType != null) ? currentDataType : "Variable";
+
+                // Check if it's a function (IDENTIFIER followed by "(")
+                if (i + 1 < tokens.size() && tokens.get(i + 1).lexeme.equals("(")) {
+                    symbolType = "Function (" + (currentDataType != null ? currentDataType : "void") + ")";
+                    currentScope = t.lexeme; // Change scope to function name
                 }
-                symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, "global", 1000 + symTable.getSize() * 4));
-                currentDataType = null; // Reset after declaration.
+                // Check if it's an I/O function (print, scanf, cout)
+                else if (t.lexeme.equals("print") || t.lexeme.equals("scanf") || t.lexeme.equals("cout")) {
+                    symbolType = "I/O Function";
+                }
+                // Otherwise, it's a variable (check if it's a constant)
+                else {
+                    symbolType = isConstant ? "Constant (" + (currentDataType != null ? currentDataType : "unknown") + ")" 
+                                            : (currentDataType != null ? currentDataType : "Variable");
+                }
+
+                // Assign memory address based on the current table size
+                int memoryLocation = 1000 + symTable.getSize() * 4;
+
+                // Add the symbol to the table
+                symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, currentScope, memoryLocation));
+
+                // Reset data type after variable declaration.
+                currentDataType = null;
+                isConstant = false;
+            }
+            // If we encounter "}", reset the scope to global (end of function)
+            else if (t.lexeme.equals("}")) {
+                currentScope = "global";
             }
         }
-        //System.out.println("Symbol Table Entries:");
+
+        // Print the final symbol table
+        System.out.println("Symbol Table Entries:");
         symTable.printSymbols();
-        //System.out.println("minahil ");
+
     }
     
     // Helper function to determine if a lexeme is a data type.
