@@ -155,7 +155,6 @@ public class Compiler {
         }
         System.out.println();
 
-     // In your Compiler class, update the symbol table population logic:
         SymbolTable symTable = new SymbolTable();
         String currentDataType = null;
         boolean isConstant = false;
@@ -167,78 +166,90 @@ public class Compiler {
             Token t = tokens.get(i);
             String additionalInfo = "";
 
-            // First check if it's an I/O function to avoid treating it as a regular function
+            // First check if it's an I/O function declaration
             if (t.type.equals("IDENTIFIER") && (t.lexeme.equals("scanf") || t.lexeme.equals("print"))) {
-                symTable.addSymbol(new SymbolInfo(t.lexeme, "I/O Function", "global", -1, 
-                    "Standard Input/Output Operation"));
-                continue;  // Skip the rest of the loop for I/O functions
+                // Only add if it's the function name itself, not a call
+                if (i > 0 && !tokens.get(i-1).type.equals("OPERATOR")) {
+                    symTable.addSymbol(new SymbolInfo(t.lexeme, "I/O Function", "global", -1, 
+                        "Standard Input/Output Operation"));
+                }
+                continue;
             }
 
             // Handle regular identifiers
             if (t.type.equals("IDENTIFIER")) {
-                String symbolType = "Variable";
-                
-                // Check if it's a function declaration (but not an I/O function)
-                if (i + 1 < tokens.size() && tokens.get(i + 1).lexeme.equals("(") && 
-                    !t.lexeme.equals("scanf") && !t.lexeme.equals("print")) {
-                    symbolType = "Function";
-                    currentFunction = t.lexeme;
-                    inFunction = true;
-                    additionalInfo = "Return Type: " + (currentDataType != null ? currentDataType : "void");
-                    currentScope = "global";
-                }
-                // Check if it's a parameter
-                else if (inFunction && currentFunction != null && 
-                        i > 0 && tokens.get(i - 1).lexeme.equals("(")) {
-                    symbolType = "Variable";
-                    additionalInfo = "Parameter of " + currentFunction + " (" + 
-                                   (currentDataType != null ? currentDataType : "Unknown Type") + ")";
-                    currentScope = "local:" + currentFunction;
-                }
-                // Regular variable declaration
-                else if (currentDataType != null) {
-                    symbolType = "Variable";
-                    if (isConstant) {
-                        additionalInfo = "Constant " + currentDataType;
-                    } else {
-                        additionalInfo = "Type: " + currentDataType;
-                    }
-                    // Only set local scope if we're inside a real function (not an I/O function)
-                    if (inFunction && currentFunction != null && 
-                        !currentFunction.equals("scanf") && !currentFunction.equals("print")) {
-                        currentScope = "local:" + currentFunction;
-                        additionalInfo += " (Local to " + currentFunction + ")";
-                    } else {
+                // Only process if we're in a declaration context (has a current data type or is a function declaration)
+                if (currentDataType != null || 
+                    (i + 1 < tokens.size() && tokens.get(i + 1).lexeme.equals("(") && 
+                     i > 0 && !tokens.get(i-1).type.equals("OPERATOR"))) {
+                    
+                    String symbolType = "Variable";
+                    
+                    // Check if it's a function declaration (but not an I/O function)
+                    if (i + 1 < tokens.size() && tokens.get(i + 1).lexeme.equals("(") && 
+                        !t.lexeme.equals("scanf") && !t.lexeme.equals("print")) {
+                        symbolType = "Function";
+                        currentFunction = t.lexeme;
+                        inFunction = true;
+                        additionalInfo = "Return Type: " + (currentDataType != null ? currentDataType : "void");
                         currentScope = "global";
                     }
-                }
-                
-                // Assign memory location (skip for operators and comments)
-                int memoryLocation = (symbolType.equals("Arithmetic Operator") || 
-                                    symbolType.equals("Comment") || 
-                                    symbolType.equals("I/O Function")) ? -1 : 1000 + symTable.getSize() * 4;
-                
-                symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, currentScope, 
-                                                 memoryLocation, additionalInfo));
-                
-                if (!symbolType.equals("Function")) {
-                    currentDataType = null;
-                    isConstant = false;
+                    // Check if it's a parameter
+                    else if (inFunction && currentFunction != null && 
+                            i > 0 && tokens.get(i - 1).lexeme.equals("(")) {
+                        symbolType = "Variable";
+                        additionalInfo = "Parameter of " + currentFunction + " (" + 
+                                       (currentDataType != null ? currentDataType : "Unknown Type") + ")";
+                        currentScope = "local:" + currentFunction;
+                    }
+                    // Regular variable declaration
+                    else if (currentDataType != null) {
+                        symbolType = "Variable";
+                        if (isConstant) {
+                            additionalInfo = "Constant " + currentDataType;
+                        } else {
+                            additionalInfo = "Type: " + currentDataType;
+                        }
+                        // Only set local scope if we're inside a real function
+                        if (inFunction && currentFunction != null && 
+                            !currentFunction.equals("scanf") && !currentFunction.equals("print")) {
+                            currentScope = "local:" + currentFunction;
+                            additionalInfo += " (Local to " + currentFunction + ")";
+                        } else {
+                            currentScope = "global";
+                        }
+                    }
+                    
+                    // Assign memory location
+                    int memoryLocation = (symbolType.equals("Arithmetic Operator") || 
+                                        symbolType.equals("Comment") || 
+                                        symbolType.equals("I/O Function")) ? -1 : 1000 + symTable.getSize() * 4;
+                    
+                    symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, currentScope, 
+                                                     memoryLocation, additionalInfo));
+                    
+                    if (!symbolType.equals("Function")) {
+                        currentDataType = null;
+                        isConstant = false;
+                    }
                 }
             }
             // Handle operators
             else if (t.type.equals("OPERATOR")) {
-                symTable.addSymbol(new SymbolInfo(t.lexeme, "Arithmetic Operator", 
-                                  currentScope, -1, "Performs arithmetic operation"));
+                // Only add operator once when first encountered
+                if (!symTable.hasSymbol(t.lexeme)) {
+                    symTable.addSymbol(new SymbolInfo(t.lexeme, "Arithmetic Operator", 
+                                      "global", -1, "Performs arithmetic operation"));
+                }
             }
             // Handle comments
             else if (t.lexeme.startsWith("//")) {
-                symTable.addSymbol(new SymbolInfo(t.lexeme, "Single Line Comment", 
-                                  currentScope, -1, "Source code documentation"));
+                symTable.addSymbol(new SymbolInfo(t.lexeme.substring(0, Math.min(t.lexeme.length(), 20)) + "...", 
+                                  "Single Line Comment", "global", -1, "Source code documentation"));
             }
             else if (t.lexeme.startsWith("/*")) {
-                symTable.addSymbol(new SymbolInfo(t.lexeme, "Multi Line Comment", 
-                                  currentScope, -1, "Source code documentation"));
+                symTable.addSymbol(new SymbolInfo(t.lexeme.substring(0, Math.min(t.lexeme.length(), 20)) + "...", 
+                                  "Multi Line Comment", "global", -1, "Source code documentation"));
             }
             // Reset function context when closing a function
             else if (t.lexeme.equals("}") && inFunction) {

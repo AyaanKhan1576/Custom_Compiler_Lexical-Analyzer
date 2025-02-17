@@ -43,6 +43,11 @@ public class SymbolTable {
         
         symbols.put(key, info);
     }
+    public boolean hasSymbol(String name) {
+        // Check if symbol exists in any scope
+        return symbols.containsKey(name) || 
+               symbols.values().stream().anyMatch(info -> info.name.equals(name));
+    }
 
     public SymbolInfo lookupSymbol(String name, String scope) {
         // First try to find in current scope
