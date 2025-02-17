@@ -1,6 +1,13 @@
 package package1;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Scanner;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.nio.file.Files;
+import java.nio.file.Paths;
+import java.io.IOException;
+import java.util.List;
 
 //Testing new branch : Ayaan
 
@@ -8,9 +15,9 @@ public class Compiler {
     // Special symbol for epsilon transitions.
     public static final char EPSILON = '\0';
 
+ // Modify the main method to read from file
     public static void main(String[] args) {
         System.out.println("=== COMPILER CONSTRUCTION ASSIGNMENT 1 ===\n");
-
         // 1. Define token types with their regexes and priorities.
         // Lower priority value means higher precedence.
         List<TokenDefinition> definitions = new ArrayList<>();
@@ -95,84 +102,58 @@ public class Compiler {
         //dfa.printTransitionTable();
         System.out.println();
 
+
         // 4. Use the DFA in a lexical analyzer.
         LexicalAnalyzerAutomata lexer = new LexicalAnalyzerAutomata(dfa);
 
-        String input = "/* This is a multi-line comment\n" +
-                "   Testing multiple lines\n" +
-                "   of documentation */\n" +
-                "\n" +
-                "// Global variable declarations\n" +
-                "int a = 10;\n" +
-                "const int b = 20;\n" +
-                "boolean flag = true;\n" +
-                "char letter = 'A';\n" +
-                "string msg = \"hello world\";\n" +
-                "decimal pi = 3.14;\n" +
-                "\n" +
-                "// Testing I/O operations\n" +
-                "scanf(\"%d\", &a);\n" +
-                "\n" +
-                "/* Nested if blocks with\n" +
-                "   local variables */\n" +
-                "if (a > 5) {\n" +
-                "    // Local variables in first if block\n" +
-                "    int localvar = 1;\n" +
-                "    const int localconst = 2;\n" +
-                "    \n" +
-                "    scanf(\"%d\", a);\n" +
-                "    \n" +
-                "    // Testing arithmetic operators\n" +
-                "    if (a % 5) {\n" +
-                "        /* Local variables in\n" +
-                "           nested if block */\n" +
-                "        int localVar = 1;\n" +
-                "        const int localConst = 2;\n" +
-                "        a = a + localVar;  // Addition operator\n" +
-                "        return flag;\n" +
-                "        print(\"hello\");\n" +
-                "    } else {\n" +
-                "        // Subtraction in else block\n" +
-                "        a = a - 1;\n" +
-                "        return false;\n" +
-                "    }\n" +
-                "}\n" +
-                "\n" +
-                "// Function declaration with local variables\n" +
-                "void func() {\n" +
-                "    // Local function variable\n" +
-                "    int localfuncvar1 = 100;\n" +
-                "    pi = 3;" +
-                "}\n" +
-                "\n" +
-                "// Function declaration with parameters\n" +
-                "void foo(int param1) {\n" +
-                "    // Local variable in foo function\n" +
-                "    int localFuncVar = 100;\n" +
-                "}\n" +
-                "\n" +
-                "// Function call\n" +
-                "foo(param1);";
-        System.out.println("Input Code:\n" + input);
-        ArrayList<Token> tokens = lexer.tokenize(input);
-     // Display the total number of tokens
-        System.out.println("\n══════════════════════════════════════════════");
-        System.out.printf("              Total Tokens: %d%n", tokens.size());
-        System.out.println("══════════════════════════════════════════════");
+        // New code for file input
+        Scanner scanner = new Scanner(System.in);
+        System.out.print("Enter the path to your input file: ");
+        String filePath = scanner.nextLine();
+        
+        try {
+            // Read the entire file content
+            String input = new String(Files.readAllBytes(Paths.get(filePath)));
+            
+            System.out.println("\nInput Code from file: " + filePath);
+            System.out.println("═══════════════════════════════════");
+            System.out.println(input);
+            System.out.println("═══════════════════════════════════\n");
 
-        // Print table header
-        System.out.printf("%-5s │ %-15s │ %s%n", "#", "Token Type", "Lexeme");
-        System.out.println("──────────────────────────────────────────────");
+            ArrayList<Token> tokens = lexer.tokenize(input);
+            
+            // Display the total number of tokens
+            System.out.println("\n══════════════════════════════════════════════");
+            System.out.printf("              Total Tokens: %d%n", tokens.size());
+            System.out.println("══════════════════════════════════════════════");
 
-        // Print each token with formatting
-        int index = 1;
-        for (Token t : tokens) {
-            System.out.printf("%-5d │ %-15s │ %s%n", index++, t.type, t.lexeme);
+            // Print table header
+            System.out.printf("%-5s │ %-15s │ %s%n", "#", "Token Type", "Lexeme");
+            System.out.println("──────────────────────────────────────────────");
+
+            // Print each token with formatting
+            int index = 1;
+            for (Token t : tokens) {
+                System.out.printf("%-5d │ %-15s │ %s%n", index++, t.type, t.lexeme);
+            }
+
+            System.out.println("══════════════════════════════════════════════\n");
+
+            // Process symbol table
+            processSymbolTable(tokens);
+
+        } catch (FileNotFoundException e) {
+            System.err.println("Error: File not found - " + filePath);
+            System.err.println("Please make sure the file exists and the path is correct.");
+        } catch (IOException e) {
+            System.err.println("Error reading file: " + e.getMessage());
+        } finally {
+            scanner.close();
         }
+    }
 
-        System.out.println("══════════════════════════════════════════════\n");
-
-
+    // Move symbol table processing to a separate method
+    private static void processSymbolTable(ArrayList<Token> tokens) {
         SymbolTable symTable = new SymbolTable();
         String currentDataType = null;
         boolean isConstant = false;
@@ -184,7 +165,7 @@ public class Compiler {
             Token t = tokens.get(i);
             String additionalInfo = "";
 
-            // First check if it's an I/O function declaration
+         // First check if it's an I/O function declaration
             if (t.type.equals("IDENTIFIER") && (t.lexeme.equals("scanf") || t.lexeme.equals("print"))) {
                 // Only add if it's the function name itself, not a call
                 if (i > 0 && !tokens.get(i-1).type.equals("OPERATOR")) {
@@ -283,6 +264,7 @@ public class Compiler {
                 isConstant = true;
             }
         }
+
 
         symTable.printSymbols();
     }
