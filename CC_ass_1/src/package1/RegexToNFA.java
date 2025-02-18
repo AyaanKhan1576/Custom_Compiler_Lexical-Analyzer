@@ -16,9 +16,9 @@ public class RegexToNFA {
         return 0;
     }
 
-    /**
-     * Inserts an explicit concatenation operator ('.') where needed.
-     */
+
+    //Inserts an explicit concatenation operator ('.') where needed.
+
     public static String insertExplicitConcatenation(String regex) {
         StringBuilder result = new StringBuilder();
         for (int i = 0; i < regex.length(); i++) {
@@ -35,15 +35,12 @@ public class RegexToNFA {
         return result.toString();
     }
 
-    // In this engine, letters and digits are considered literals.
     private static boolean isLiteral(char c) {
         return Character.isLetterOrDigit(c);
     }
 
-    /**
-     * Converts an infix regex to postfix notation using the shunting-yard algorithm.
-     * Supports a minimal escape mechanism: a backslash '\' causes the next character to be treated as literal.
-     */
+    
+    //Converts an infix regex to postfix notation 
     public static String infixToPostfix(String regex) {
         String exp = insertExplicitConcatenation(regex);
         StringBuilder output = new StringBuilder();
@@ -51,7 +48,6 @@ public class RegexToNFA {
         for (int i = 0; i < exp.length(); i++) {
             char c = exp.charAt(i);
             if (c == '\\') {
-                // Insert the escape marker and then the next character.
                 i++;
                 if (i < exp.length()) {
                     output.append(ESCAPED);
@@ -67,7 +63,7 @@ public class RegexToNFA {
                 }
                 if (!stack.isEmpty() && stack.peek() == '(')
                     stack.pop();
-            } else { // Operators: *, ., |
+            } else { 
                 while (!stack.isEmpty() && precedence(c) <= precedence(stack.peek())) {
                     output.append(stack.pop());
                 }
@@ -79,16 +75,14 @@ public class RegexToNFA {
         }
         return output.toString();
     }
+    
 
-    /**
-     * Builds an NFA from a postfix regular expression using Thompson's construction.
-     */
+    //Builds an NFA from a postfix regular expression 
     public static NFA buildNFAFromPostfix(String postfix) {
         Stack<NFA> stack = new Stack<>();
         for (int i = 0; i < postfix.length(); i++) {
             char c = postfix.charAt(i);
             if (c == ESCAPED) {
-                // Next character is a literal.
                 i++;
                 if (i < postfix.length()) {
                     char literal = postfix.charAt(i);
@@ -105,7 +99,7 @@ public class RegexToNFA {
                 NFA nfa2 = stack.pop();
                 NFA nfa1 = stack.pop();
                 stack.push(NFA.union(nfa1, nfa2));
-            } else { // Literal character.
+            } else { 
                 stack.push(NFA.literal(c));
             }
         }

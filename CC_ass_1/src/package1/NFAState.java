@@ -4,9 +4,7 @@ import java.util.ArrayList;
 public class NFAState {
     public int id;
     public ArrayList<Transition> transitions;
-    // If this state is an accepting state, tokenType is non-null.
     public String tokenType;
-    // tokenPriority helps resolve conflicts when multiple token types match.
     public int tokenPriority;
 
     private static int stateCounter = 0;

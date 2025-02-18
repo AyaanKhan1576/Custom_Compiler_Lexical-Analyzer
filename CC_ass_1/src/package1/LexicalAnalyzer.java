@@ -3,9 +3,7 @@ import java.util.ArrayList;
 
 public class LexicalAnalyzer {
 
-    /**
-     * Tokenizes the provided source code.
-     */
+
     public ArrayList<Token> tokenize(String code) {
         ArrayList<Token> tokens = new ArrayList<>();
         // Remove comments first.
@@ -25,7 +23,7 @@ public class LexicalAnalyzer {
                     index++;
                     continue;
                 }
-                // Identifiers: only lowercase letters.
+                // Identifiers:
                 if (isLetter(c)) {
                     StringBuilder ident = new StringBuilder();
                     while (index < line.length() && isLetter(line.charAt(index))) {
@@ -34,7 +32,7 @@ public class LexicalAnalyzer {
                     }
                     tokens.add(new Token("IDENTIFIER", ident.toString(), lineNumber));
                 }
-                // Numbers: integer or decimal.
+                // Numbers: 
                 else if (isDigit(c)) {
                     StringBuilder number = new StringBuilder();
                     while (index < line.length() && isDigit(line.charAt(index))) {
@@ -90,7 +88,7 @@ public class LexicalAnalyzer {
         return tokens;
     }
 
-    // Removes both multi-line (/* ... */) and single-line (// ...) comments.
+    // Removes comments.
     private String removeComments(String code) {
         StringBuilder result = new StringBuilder();
         int index = 0;
@@ -144,13 +142,11 @@ public class LexicalAnalyzer {
         return c >= '0' && c <= '9';
     }
 
-    // Recognized operators: +, -, *, /, %, ^, =, (, )
     private boolean isOperator(char c) {
         return c == '+' || c == '-' || c == '*' || c == '/' ||
                c == '%' || c == '^' || c == '=' || c == '(' || c == ')';
     }
 
-    // Recognized punctuation: comma, semicolon.
     private boolean isPunctuation(char c) {
         return c == ',' || c == ';';
     }

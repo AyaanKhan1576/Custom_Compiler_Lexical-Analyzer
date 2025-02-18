@@ -2,10 +2,10 @@ package package1;
 
 public class SymbolInfo {
     public String name;
-    public String type; // Variable, Function, I/O Function, Arithmetic Operator, etc.
-    public String scope; // global or local
+    public String type; 
+    public String scope;
     public int memoryLocation;
-    public String additionalInfo; // Stores specific details like data type, return type, etc.
+    public String additionalInfo; 
 
     public SymbolInfo(String name, String type, String scope, int memoryLocation, String additionalInfo) {
         this.name = name;
@@ -15,7 +15,6 @@ public class SymbolInfo {
         this.additionalInfo = additionalInfo;
     }
 
-    // Add getter methods to properly encapsulate the fields
     public String getScope() {
         return scope;
     }

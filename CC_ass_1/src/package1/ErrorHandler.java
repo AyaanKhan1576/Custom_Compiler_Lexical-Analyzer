@@ -45,12 +45,12 @@ public class ErrorHandler {
         System.err.println("Symbol: " + symbol);
     }
 
-    // Generic error handler for unexpected errors
+    // Generic error handler 
     public static void handleGenericError(String message) {
         System.err.println("Verily, an error hath occurred: " + message);
     }
 
-    // Warning messages (less severe than errors)
+    // Warning messages 
     public static void issueWarning(String message) {
         System.out.println("Hearken! A warning doth appear: " + message);
     }

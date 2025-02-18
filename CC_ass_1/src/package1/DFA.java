@@ -9,9 +9,7 @@ public class DFA {
     NFA nfa;
     // Transition table: mapping DFA state id → (input symbol → next DFA state id)
     HashMap<Integer, HashMap<Character, Integer>> transitionTable;
-    // Each DFA state is a set of NFA state IDs.
     ArrayList<ArrayList<Integer>> dfaStates;
-    // For each DFA state, if it is accepting, record its token type and priority.
     ArrayList<String> dfaTokenType;
     ArrayList<Integer> dfaTokenPriority;
     int dfaStateCount;
@@ -29,7 +27,6 @@ public class DFA {
 
     // Convert the NFA to a DFA using subset construction.
     public void convert() {
-        // Build the alphabet (exclude EPSILON).
         for (NFAState state : NFAState.getAllStates()) {
             for (Transition t : state.transitions) {
                 if (t.symbol != Compiler.EPSILON && !alphabet.contains(t.symbol)) {
@@ -40,7 +37,6 @@ public class DFA {
         // The start DFA state is the epsilon closure of the NFA start state.
         ArrayList<Integer> startSet = epsilonClosure(stateToList(nfa.start));
         dfaStates.add(startSet);
-        // Determine accepting token type (if any) for the start state.
         String tokenType = null;
         int tokenPriority = Integer.MAX_VALUE;
         for (int id : startSet) {

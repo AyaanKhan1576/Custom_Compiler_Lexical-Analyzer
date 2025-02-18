@@ -46,7 +46,7 @@ nothing foo(number param1) {
     number localFuncVar = 100;
 }
 number testNum(){
-	a = 40;
+	text test = "hello";
 }
 // Function call
 foo(param1);
