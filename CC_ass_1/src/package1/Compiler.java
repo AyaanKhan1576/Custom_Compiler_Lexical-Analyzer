@@ -9,24 +9,24 @@ import java.nio.file.Paths;
 import java.io.IOException;
 import java.util.List;
 
-//Testing new branch : Ayaan
 
 public class Compiler {
     // Special symbol for epsilon transitions.
     public static final char EPSILON = '\0';
 
- // Modify the main method to read from file
     public static void main(String[] args) {
         System.out.println("=== COMPILER CONSTRUCTION ASSIGNMENT 1 ===\n");
+        
         // 1. Define token types with their regexes and priorities.
         // Lower priority value means higher precedence.
+        
         List<TokenDefinition> definitions = new ArrayList<>();
 
         // Updated keywords for Ye Olde Code
         definitions.add(new TokenDefinition("KEYWORD", 
             "perchance|otheryonder|whilst|fortime|giveth|number|truth|letter|text|"
             + "fraction|twainfraction|forever|nothing|unmoving|callith|binding|chooseth|"
-            + "maketh|shatter|forthwith|howbig|sayeth|heareth", 1));
+            + "maketh|shatter|forthwith|howbig", 1));
 
 
         // Boolean literals remain the same
