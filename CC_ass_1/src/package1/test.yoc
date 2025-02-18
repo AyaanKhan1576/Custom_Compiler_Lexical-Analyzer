@@ -45,5 +45,8 @@ nothing foo(number param1) {
     // Local variable in foo function
     number localFuncVar = 100;
 }
+number testNum(){
+	a = 40;
+}
 // Function call
 foo(param1);

@@ -194,11 +194,11 @@ public class Compiler {
                     
                     // Check if it's a function declaration (but not an I/O function)
                     if (i + 1 < tokens.size() && tokens.get(i + 1).lexeme.equals("(") && 
-                        !t.lexeme.equals("scanf") && !t.lexeme.equals("print")) {
+                        !t.lexeme.equals("sayeth") && !t.lexeme.equals("heareth")) {
                         symbolType = "Function";
                         currentFunction = t.lexeme;
                         inFunction = true;
-                        additionalInfo = "Return Type: " + (currentDataType != null ? currentDataType : "void");
+                        additionalInfo = "Return Type: " + (currentDataType != null ? currentDataType : "nothing");
                         currentScope = "global";
                     }
                     // Check if it's a parameter
@@ -219,7 +219,7 @@ public class Compiler {
                         }
                         // Only set local scope if we're inside a real function
                         if (inFunction && currentFunction != null && 
-                            !currentFunction.equals("scanf") && !currentFunction.equals("print")) {
+                            !currentFunction.equals("sayeth") && !currentFunction.equals("heareth")) {
                             currentScope = "local:" + currentFunction;
                             additionalInfo += " (Local to " + currentFunction + ")";
                         } else {
@@ -227,13 +227,13 @@ public class Compiler {
                         }
                     }
                     
-                    // Assign memory location
+                    // Assign memory location (for non-operators and non-I/O functions)
                     int memoryLocation = (symbolType.equals("Arithmetic Operator") || 
-                                        symbolType.equals("Comment") || 
-                                        symbolType.equals("I/O Function")) ? -1 : 1000 + symTable.getSize() * 4;
+                                          symbolType.equals("Comment") || 
+                                          symbolType.equals("I/O Function")) ? -1 : 1000 + symTable.getSize() * 4;
                     
                     symTable.addSymbol(new SymbolInfo(t.lexeme, symbolType, currentScope, 
-                                                     memoryLocation, additionalInfo));
+                                                      memoryLocation, additionalInfo));
                     
                     if (!symbolType.equals("Function")) {
                         currentDataType = null;
@@ -271,6 +271,7 @@ public class Compiler {
             else if (t.lexeme.equals("const")) {
                 isConstant = true;
             }
+
         }
 
 
