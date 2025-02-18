@@ -1,0 +1,49 @@
+/* This is a multi-line comment
+   Testing multiple lines
+   of documentation */
+// Global variable declarations
+number a = 10;
+forever number b = 20;
+truth flag = true;
+letter character = 'a';
+text msg = "hello world";
+fraction pi = 3.14;
+// Testing I/O operations
+heareth("%d", &a);
+/* Nested perchance blocks with
+   local variables */
+perchance (a > 5) {
+    // Local variables in first perchance block
+    number localvar = 1;
+    forever number localconst = 2;
+    
+    heareth("%d", a);
+    
+    // Testing arithmetic operators
+    perchance (a % 5) {
+        /* Local variables in
+           nested perchance block */
+        number localVar = 1;
+        forever number localConst = 2;
+        a = a + localVar;  // Addition operator
+        giveth flag;
+        sayeth("hello");
+    } otheryonder {
+        // Subtraction in otheryonder block
+        a = a - 1;
+        giveth false;
+    }
+}
+// Function declaration with local variables
+nothing func() {
+    // Local function variable
+    number localfuncvar1 = 100;
+    pi = 3;
+}
+// Function declaration with parameters
+nothing foo(number param1) {
+    // Local variable in foo function
+    number localFuncVar = 100;
+}
+// Function call
+foo(param1);

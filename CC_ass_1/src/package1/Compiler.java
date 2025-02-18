@@ -100,7 +100,11 @@ public class Compiler {
         dfa.convert();
         System.out.println("Total DFA States: " + dfa.getTotalDFAStates());
         System.out.println();
+        
+        // Uncomment this code to display transition tables
         //dfa.printTransitionTable();
+        //
+        
         System.out.println();
 
 
@@ -114,6 +118,8 @@ public class Compiler {
         
         try {
             // Read the entire file content
+        	//C:/Users/ayaan/git/repository/Custom_Compiler_i220832_i220849/CC_ass_1/src/package1/test.yoc
+
             String input = new String(Files.readAllBytes(Paths.get(filePath)));
             
             System.out.println("\nInput Code from file: " + filePath);
