@@ -24,7 +24,10 @@ public class Compiler {
 
         // Updated keywords for Ye Olde Code
         definitions.add(new TokenDefinition("KEYWORD", 
-            "perchance|otheryonder|whilst|fortime|giveth|number|truth|letter|text|fraction|twainfraction|forever|nothing", 1));
+            "perchance|otheryonder|whilst|fortime|giveth|number|truth|letter|text|"
+            + "fraction|twainfraction|forever|nothing|unmoving|callith|binding|chooseth|"
+            + "maketh|shatter|forthwith|howbig|sayeth|heareth", 1));
+
 
         // Boolean literals remain the same
         definitions.add(new TokenDefinition("TRUTH", "true|false", 1));
