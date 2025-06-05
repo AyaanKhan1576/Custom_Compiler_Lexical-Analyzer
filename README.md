@@ -1,10 +1,8 @@
-Compiler Construction
-
+## Compiler Construction
 Lexial Analyser
 
-Ayaan Khan  (22i-0832 | CS-K)
-
-Minahil Ali (22i-0849 | CS-G)
+- Ayaan Khan  (22i-0832 | CS-K)
+- Minahil Ali (22i-0849 | CS-G)
 
 ---
 
